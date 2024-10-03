@@ -1,0 +1,229 @@
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+import statsmodels.api as sm
+
+# Load data
+file_path = 'C:\\Users\\conno\\Downloads\\2010-2023 NFL Data.csv'
+nfl_data = pd.read_csv(file_path)
+
+# Display the first few rows to understand the structure
+print(nfl_data.head())
+
+# Print the columns to understand their names
+print(nfl_data.columns)
+
+# Update these column names based on the actual names in your dataset
+relevant_columns = ['pass_yards_home', 'rush_yards_home', 'interceptions_away', 'fumbles_away', 'score_home']
+
+# Ensure that only relevant columns are used
+nfl_data = nfl_data[relevant_columns]
+
+# Check for and handle any missing values
+nfl_data = nfl_data.dropna()
+
+# Independent variables
+X = nfl_data[['pass_yards_home', 'rush_yards_home', 'interceptions_away', 'fumbles_away']]
+# Dependent variable
+y = nfl_data['score_home']
+
+# Perform linear regression
+reg_model = LinearRegression()
+reg_model.fit(X, y)
+
+# Print the coefficients and intercept
+coefficients = reg_model.coef_
+intercept = reg_model.intercept_
+
+print("Coefficients:", coefficients)
+print("Intercept:", intercept)
+
+# Use statsmodels for a detailed summary
+X = sm.add_constant(X)  # Add a constant to the independent variables for the intercept
+model = sm.OLS(y, X).fit()
+print(model.summary())
+
+#coefficients of the most sig variables pass yards, rush yards, takeaways by the home team
+coefficients = [0.07327953, 0.08847347, 2.94693214, 2.7137301, 0.1]
+intercept = -7.924745457724313
+
+import pandas as pd
+import numpy as np
+from scipy.stats import norm
+
+file_path = 'C:\\Users\\conno\\Downloads\\2010-2023 NFL Data.csv'
+nfl_data = pd.read_csv(file_path)
+
+# Display the first few rows to understand the structure
+print(nfl_data.head())
+
+# Print the columns to understand their names
+print(nfl_data.columns)
+
+file_path1 = r'C:\Users\conno\Downloads\2023 NFL Data.xlsx'  # Use raw string to handle backslashes
+nfl_data_2023 = pd.read_excel(file_path1, sheet_name='2023 nfl data', engine='openpyxl')
+
+# Display the first few rows to understand the structure
+print(nfl_data_2023.head())
+
+# Print the columns to understand their names
+print(nfl_data_2023.columns)
+
+
+relevant_columns= ['pass_yards_game','pass_yards_allowed','rush_yards_game', 'rush_yards_allowed','takeaways_game','giveaways_game','team','passer_rating','passer_rating_allowed']
+
+df = nfl_data_2023[relevant_columns]
+df = df.dropna()
+
+df['passer_rating'] = df['passer_rating'] / 158.3
+df['passer_rating_allowed'] = df['passer_rating_allowed'] / 158.3
+
+def calculate_expected_values(df, home, away):
+    home_stats = df[df['team'] == home].iloc[0]
+    away_stats = df[df['team'] == away].iloc[0]
+
+    expected_pass_yards = (home_stats['pass_yards_game'] + away_stats['pass_yards_allowed']) / 2
+    expected_rush_yards = (home_stats['rush_yards_game'] + away_stats['rush_yards_allowed']) / 2
+    expected_takeaways = (home_stats['takeaways_game'] + away_stats['giveaways_game']) / 2
+    expected_giveaways = (home_stats['giveaways_game'] + away_stats['takeaways_game']) / 2
+    expected_passer_rating = (home_stats['passer_rating'] + away_stats['passer_rating_allowed']) / 2
+
+    return {
+        'expected_pass_yards': expected_pass_yards,
+        'expected_rush_yards': expected_rush_yards,
+        'expected_takeaways': expected_takeaways,
+        'expected_giveaways': expected_giveaways,
+        'expected_passer_rating': expected_passer_rating
+    }
+home = 'Home Team'
+away = 'Away Team'
+
+# Calculate expected values
+expected_values = calculate_expected_values(nfl_data_2023, away, home)
+
+print(f"Home Expected Passing Yards: {expected_values['expected_pass_yards']}")
+print(f"Home Expected Rushing Yards: {expected_values['expected_rush_yards']}")
+print(f"Home Expected Takeaways: {expected_values['expected_takeaways']}")
+print(f"Home Expected Giveaways: {expected_values['expected_giveaways']}")
+print(f"Home Expected Passer Rating: {expected_values['expected_passer_rating']}")
+
+def calculate_expected_values(df, away, home):
+    away_stats = df[df['team'] == away].iloc[0]
+    home_stats = df[df['team'] == home].iloc[0]
+
+    expected_pass_yards = (away_stats['pass_yards_game'] + home_stats['pass_yards_allowed']) / 2
+    expected_rush_yards = (away_stats['rush_yards_game'] + home_stats['rush_yards_allowed']) / 2
+    expected_takeaways = (away_stats['takeaways_game'] + home_stats['giveaways_game']) / 2
+    expected_giveaways = (away_stats['giveaways_game'] + home_stats['takeaways_game']) / 2
+    expected_passer_rating = (away_stats['passer_rating'] + home_stats['passer_rating_allowed']) / 2
+
+    return {
+        'expected_pass_yards': expected_pass_yards,
+        'expected_rush_yards': expected_rush_yards,
+        'expected_takeaways': expected_takeaways,
+        'expected_giveaways': expected_giveaways,
+        'expected_passer_rating': expected_passer_rating
+    }
+home = 'Home'
+away = 'Away Team'
+
+# Calculate expected values
+expected_values = calculate_expected_values(nfl_data_2023, away, home)
+
+print(f"Away Expected Passing Yards: {expected_values['expected_pass_yards']}")
+print(f"Away Expected Rushing Yards: {expected_values['expected_rush_yards']}")
+print(f"Away Expected Takeaways: {expected_values['expected_takeaways']}")
+print(f"Away Expected Giveaways: {expected_values['expected_giveaways']}")
+print(f"Away Expected Passer Rating: {expected_values['expected_passer_rating']}")
+std_devs = {
+    'pass_yards_game': nfl_data_2023['pass_yards_game'].std(),
+    'pass_yards_allowed': nfl_data_2023['pass_yards_allowed'].std(),
+    'rush_yards_game': nfl_data_2023['rush_yards_game'].std(),
+    'rush_yards_allowed': nfl_data_2023['rush_yards_allowed'].std(),
+    'takeaways_game': nfl_data_2023['takeaways_game'].std(),
+    'giveaways_game': nfl_data_2023['giveaways_game'].std(),
+    'passer_rating': nfl_data_2023['passer_rating'].std(),
+    'passer_rating_allowed': nfl_data_2023['passer_rating_allowed'].std()
+}
+
+print("Standard Deviations:")
+print(std_devs)
+
+# Expected values for both teams
+team1_expected = {
+    'pass_yards': 542,
+    'rush_yards': 135.,
+    'takeaways': 1.33,
+    'giveaways': 0.66666,
+    'passer_rating': 111.35/158.3
+}
+
+team2_expected = {
+    'pass_yards': 366.0,
+    'rush_yards': 279.1666,
+    'takeaways': 0.66666,
+    'giveaways': 1.33,
+    'passer_rating': 79.0/158.3
+}
+
+# Calculate combined standard deviations using the provided formula
+combined_std_devs = {
+    'std_pass_yards': np.sqrt(std_devs['pass_yards_game'] ** 2 + std_devs['pass_yards_allowed'] ** 2),
+    'std_rush_yards': np.sqrt(std_devs['rush_yards_game'] ** 2 + std_devs['rush_yards_allowed'] ** 2),
+    'std_takeaways': np.sqrt(std_devs['takeaways_game'] ** 2 + std_devs['giveaways_game'] ** 2),
+    'std_giveaways': np.sqrt(std_devs['giveaways_game'] ** 2 + std_devs['takeaways_game'] ** 2),
+    'std_passer_rating': np.sqrt(std_devs['passer_rating'] ** 2 + std_devs['passer_rating_allowed'] ** 2)
+}
+
+print("Combined Standard Deviations:")
+print(combined_std_devs)
+
+
+# Function to generate simulated stats
+def simulate_stats(expected, std_devs):
+    simulated_stats = {}
+    for stat in ['pass_yards', 'rush_yards', 'takeaways', 'giveaways','passer_rating']:
+        expected_value = expected[stat]
+        std_dev = std_devs[f'std_{stat}']
+        random_prob = np.random.rand()
+        simulated_value = norm.ppf(random_prob, loc=expected_value, scale=std_dev)
+        simulated_stats[stat] = simulated_value
+    return simulated_stats
+
+
+# Function to calculate score for each simulated game
+def calculate_score(stats, coefficients, intercept):
+    score = (coefficients[0] * stats['pass_yards'] +
+             coefficients[1] * stats['rush_yards'] +
+             coefficients[2] * stats['takeaways'] +
+             coefficients[3] * stats['giveaways'] +
+             coefficients[4] * stats['passer_rating'] +
+             intercept)
+    return score
+
+
+# Coefficients and intercept from previous regression
+coefficients = [0.07327953, 0.08847347, 2.94693214, 2.7137301, 0.1]
+intercept = -7.924745457724313
+
+# Generate simulated game statistics and calculate scores
+num_simulations = 10000
+team1_scores = []
+team2_scores = []
+
+for _ in range(num_simulations):
+    team1_simulated_stats = simulate_stats(team1_expected, combined_std_devs)
+    team2_simulated_stats = simulate_stats(team2_expected, combined_std_devs)
+
+    team1_score = calculate_score(team1_simulated_stats, coefficients, intercept)
+    team2_score = calculate_score(team2_simulated_stats, coefficients, intercept)
+
+    team1_scores.append(team1_score)
+    team2_scores.append(team2_score)
+
+# Calculate average scores for each team
+average_team1_score = np.mean(team1_scores)
+average_team2_score = np.mean(team2_scores)
+
+print(f"Average Team 1 Score: {average_team1_score}")
+print(f"Average Team 2 Score: {average_team2_score}")
